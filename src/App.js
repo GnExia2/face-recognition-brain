@@ -2,9 +2,16 @@ import React, { Component } from 'react';
 import Navigation from './components/Navigation/Navigation.js'
 import Logo from './components/Logo/Logo.js'
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm.js'
+import FaceRecognition from './components/FaceRecognition/FaceRecognition.js'
 import Rank from './components/Rank/Rank.js'
 import Particles from 'react-particles-js';
 import './App.css';
+import Clarifai from 'clarifai';
+
+
+const app = new Clarifai.App({
+ apiKey: 'da7cbeb1229141a990496a3eb1591bc4'
+});
 
 const particlesOption = {
       particles: {
@@ -19,6 +26,36 @@ const particlesOption = {
     }
 
 class App extends Component {
+  constructor(){
+    super()
+    this.state= {
+      input:'',
+      imageUrl:'',
+      box:{},
+    }
+  }
+
+  calculateFaceLocation = (data) => {
+    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
+    const image = document.getElementById('inputimage');
+    const width = Number(image.width);
+    const height = Number(image.height);
+    console.log(width, height);
+  }
+
+  onInputChange = (event) => {
+    this.setState({input: event.target.value});
+  }
+
+  onButtonSubmit = () => {
+      this.setState({imageUrl: this.state.input})
+      app.models.predict(
+        Clarifai.FACE_DETECT_MODEL,
+        this.state.input)
+      .then(response => this.calculateFaceLocation(response))
+      .catch(err => console.log(err));
+  }
+
   render() {
     return (
       <div className="App">
@@ -29,7 +66,11 @@ class App extends Component {
         <Navigation />
         <Logo/>
         <Rank/>
-        <ImageLinkForm/>
+        <ImageLinkForm
+          onInputChange={this.onInputChange}
+          onButtonSubmit={this.onButtonSubmit}
+        />
+        <FaceRecognition imageUrl={this.state.imageUrl}/>
       </div>
     );
   }
