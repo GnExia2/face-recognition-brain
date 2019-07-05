@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs')
+const cors = require('cors');
 
 
 const app = express();
 app.use(bodyParser.json())
+app.use(cors())
 
 
 const database = {
@@ -50,7 +52,6 @@ app.post('/register', (req, res) => {
     id: '125',
     name: name,
     email: email,
-    password: password,
     entries: 0,
     joined: new Date()
   })
@@ -71,7 +72,7 @@ app.get('/profile/:id', (req,res) => {
   }
 })
 
-app.post('/image', (req,res) => {
+app.put('/image', (req,res) => {
   const { id } = req.body;
   let found = false
   database.users.forEach(user => {
